@@ -2,28 +2,44 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-st.title("Let's analyze some Penguin Data 🐧📊.")
+import sqlite3
+from sqlite3 import Connection
 
-@st.cache  # add caching so we load the data only once
-def load_data():
-    # Load the penguin data from https://github.com/allisonhorst/palmerpenguins.
-    penguins_url = "https://raw.githubusercontent.com/allisonhorst/palmerpenguins/v0.1.0/inst/extdata/penguins.csv"
-    return pd.read_csv(penguins_url)
+st.title("billboard data analysis")
 
-df = load_data()
+@st.cache(hash_funcs={Connection: id})  # add caching so we load the data only once
+def get_connection(path_to_db):
+    # connect to db
+    try:
+        conn = sqlite3.connect(path_to_db, check_same_thread=False)
+    except Error as e:
+        print(e)
+    return conn
 
-st.write("Let's look at raw data in the Pandas Data Frame.")
+def get_data(conn: Connection, table_name):
+    df = pd.read_sql(f'SELECT * FROM {table_name}', con=conn)
+    return df
 
-st.write(df)
+def display_data(conn: Connection, table_name):
+    if st.checkbox("Display data in sqlite databse"):
+        st.dataframe(get_data(conn, table_name))
 
-st.write("Hmm 🤔, is there some correlation between body mass and flipper length? Let's make a scatterplot with [Altair](https://altair-viz.github.io/) to find.")
+def main():
+    db_conn = get_connection('./billboard-200.db')
+    display_data(db_conn, 'albums')
 
-chart = alt.Chart(df).mark_point().encode(
-    x=alt.X("body_mass_g", scale=alt.Scale(zero=False)),
-    y=alt.Y("flipper_length_mm", scale=alt.Scale(zero=False)),
-    color=alt.Y("species")
-).properties(
-    width=600, height=400
-).interactive()
+main()
 
-st.write(chart)
+# st.write("Hmm 🤔, is there some correlation between body mass and flipper length? Let's make a scatterplot with [Altair](https://altair-viz.github.io/) to find.")
+
+# chart = alt.Chart(df).mark_point().encode(
+#     x=alt.X("body_mass_g", scale=alt.Scale(zero=False)),
+#     y=alt.Y("flipper_length_mm", scale=alt.Scale(zero=False)),
+#     color=alt.Y("species")
+# ).properties(
+#     width=600, height=400
+# ).interactive()
+
+# st.write(chart)
+
+
