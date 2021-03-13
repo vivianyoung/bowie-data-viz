@@ -12,20 +12,22 @@ def get_connection(path_to_db):
     # connect to db
     try:
         conn = sqlite3.connect(path_to_db, check_same_thread=False)
-    except Error as e:
+        return conn
+    except Exception as e:
         print(e)
-    return conn
 
 def get_data(conn: Connection, table_name):
     df = pd.read_sql(f'SELECT * FROM {table_name}', con=conn)
     return df
 
 def display_data(conn: Connection, table_name):
-    if st.checkbox("Display data in sqlite databse"):
-        st.dataframe(get_data(conn, table_name))
+    # if st.checkbox("display data"):
+    #     st.dataframe(get_data(conn, table_name))
+    st.dataframe(get_data(conn, table_name))
 
 def main():
     db_conn = get_connection('./billboard-200.db')
+    # db_conn = get_connection('https://www.dropbox.com/s/ahog97hcatpiddk/billboard-200.db')
     display_data(db_conn, 'albums')
 
 main()
