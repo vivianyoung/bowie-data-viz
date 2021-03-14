@@ -5,6 +5,7 @@ import altair as alt
 import sqlite3
 from sqlite3 import Connection
 
+# add title to streamlit app
 st.title("billboard data analysis")
 
 @st.cache(hash_funcs={Connection: id})  # add caching so we load the data only once
@@ -26,11 +27,12 @@ def display_data(conn: Connection, table_name):
     st.dataframe(get_data(conn, table_name))
 
 def main():
-    db_conn = get_connection('./billboard-200.db')
-    # db_conn = get_connection('https://www.dropbox.com/s/ahog97hcatpiddk/billboard-200.db')
-    display_data(db_conn, 'albums')
+    db_conn = get_connection('./billboard-200.db') # connect to local db file
+    display_data(db_conn, 'albums') # display data from albums table
 
 main()
+
+## sample code for streamlit + altair charts
 
 # st.write("Hmm 🤔, is there some correlation between body mass and flipper length? Let's make a scatterplot with [Altair](https://altair-viz.github.io/) to find.")
 
