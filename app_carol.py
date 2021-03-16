@@ -21,6 +21,7 @@ def get_data(conn: Connection,table_name):
     return df
 def get_bowie_data(conn: Connection,feature):
     df = pd.read_sql(f'select song, tempo,{feature},cast(valence*10 as int) as valence,date,album from acoustic_features where artist="David Bowie"', con=conn)
+    df['date'] = pd.to_datetime(df['date'])
     return df
 def get_feature_avg(conn: Connection,feature):
 	df = pd.read_sql(f'select song, date, album, avg({feature}) as avg_feature from acoustic_features where artist="David Bowie" group by album', con=conn)
@@ -43,8 +44,8 @@ def display_data(conn: Connection, table_name):
     st.dataframe(get_data(conn, table_name))
 
 #def dropdown_input(value)
-
-
+    
+    
 def main():
     range_ = ['#D64550', '#EE8189', '#FC8B4A','#F7B801','#B9F18C','#71DA1B','#439A86','#00BECC','#7678ED','#3D348B']
     option = st.selectbox(
@@ -57,10 +58,13 @@ def main():
     all_dacade_avg = get_all_decade_avg(db_conn, option)
     bowie_data = get_bowie_data(db_conn,option)
     alb_avg = get_album_feature_avg(db_conn) 
-    
+    start_year = st.slider("Show me the albums within these issued year!", 1969, 2018, (1969,2000))
+    st.write(start_year[1])
+    filtered_data1 = bowie_data[start_year[0] < bowie_data['date'].dt.year]
+    filtered_data2 = filtered_data1[filtered_data1['date'].dt.year <= start_year[1]]
     select_scatter = alt.selection_multi(fields=['valence'], bind='legend')
  	#chart
-    scatter = alt.Chart(bowie_data).mark_circle().encode(
+    scatter = alt.Chart(filtered_data2).mark_circle().encode(
     alt.X('album',scale=alt.Scale(zero=True), sort={"field": "date", "order": "ascending"},title="Albums order by Issued Date"),
     alt.Y(option,scale=alt.Scale(zero=True), title=option),
     alt.Color('valence:N',
