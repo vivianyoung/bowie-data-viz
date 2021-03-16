@@ -6,7 +6,7 @@ import sqlite3
 from sqlite3 import Connection
 
 # add title to streamlit app
-st.title("billboard data analysis")
+st.title("david bowie music data analysis")
 
 @st.cache(hash_funcs={Connection: id})  # add caching so we load the data only once
 def get_connection(path_to_db):
@@ -17,33 +17,24 @@ def get_connection(path_to_db):
     except Exception as e:
         print(e)
 
-def get_data(conn: Connection, table_name):
-    df = pd.read_sql(f'SELECT * FROM {table_name}', con=conn)
+def get_data(conn: Connection):
+    sql = f"""
+    SELECT
+      song, artist, album, date, energy, valence, danceability, instrumentalness, tempo
+    FROM 
+      acoustic_features
+    WHERE
+      (artist LIKE '%David Bowie%')
+    """
+    df = pd.read_sql(sql, con=conn)
     return df
 
-def display_data(conn: Connection, table_name):
-    # if st.checkbox("display data"):
-    #     st.dataframe(get_data(conn, table_name))
-    st.dataframe(get_data(conn, table_name))
+def display_data(conn: Connection):
+    st.dataframe(get_data(conn))
 
 def main():
     db_conn = get_connection('./billboard-200.db') # connect to local db file
-    display_data(db_conn, 'albums') # display data from albums table
+    display_data(db_conn) # display data from albums table
 
 main()
-
-## sample code for streamlit + altair charts
-
-# st.write("Hmm 🤔, is there some correlation between body mass and flipper length? Let's make a scatterplot with [Altair](https://altair-viz.github.io/) to find.")
-
-# chart = alt.Chart(df).mark_point().encode(
-#     x=alt.X("body_mass_g", scale=alt.Scale(zero=False)),
-#     y=alt.Y("flipper_length_mm", scale=alt.Scale(zero=False)),
-#     color=alt.Y("species")
-# ).properties(
-#     width=600, height=400
-# ).interactive()
-
-# st.write(chart)
-
 
