@@ -253,14 +253,21 @@ def main():
       if '-' in date:
         date = date.split('-')[0]
 
-      # get spotify preview
-      preview_url = spotify_search(f'{song} david bowie')
+      try:
+        # get spotify preview
+        preview_url = spotify_search(f'{song} david bowie')
 
-      st.markdown(f'''
-        <a class="rec-link" href="{preview_url}" target="_blank">
-          <span id="song-name">{song}</span><span id="song-details"> - {album} ({date})</span>
-        </a>
-      ''', unsafe_allow_html=True)
+        st.markdown(f'''
+          <a class="rec-link" href="{preview_url}" target="_blank">
+            <span id="song-name">{song}</span><span id="song-details"> - {album} ({date})</span>
+          </a>
+        ''', unsafe_allow_html=True)
+      except Exception:
+        st.markdown(f'''
+          <div class="rec-link">
+            <span id="song-name">{song}</span><span id="song-details"> - {album} ({date})</span>
+          </div>
+        ''', unsafe_allow_html=True)
 
 
 

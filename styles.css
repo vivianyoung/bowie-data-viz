@@ -37,6 +37,7 @@ body {
   font-weight: 500;
   color: inherit!important;
   margin-bottom:30px;
+  cursor: pointer;
 }
 
 .rec-link:hover{
