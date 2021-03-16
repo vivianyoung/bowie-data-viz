@@ -17,15 +17,15 @@ def get_data(conn: Connection,table_name):
     df = pd.read_sql(f'SELECT * FROM {table_name} where artist="David Bowie"', con=conn)
     return df
 def get_bowie_data(conn: Connection,feature):
-    df = pd.read_sql(f'select song, tempo,{feature},cast(valence*10 as int) as valence,date,album from acoustic_features where artist="David Bowie"', con=conn)
+    df = pd.read_sql(f'select song, tempo,round({feature},2) as {feature},cast(valence*10 as int) as valence,date,album from acoustic_features where artist="David Bowie"', con=conn)
     df['date'] = pd.to_datetime(df['date'])
     return df
 def get_feature_avg(conn: Connection,feature):
-	df = pd.read_sql(f'select song, date, album, avg({feature}) as avg_feature from acoustic_features where artist="David Bowie" group by album', con=conn)
+	df = pd.read_sql(f'select song, date, album, round(avg({feature}),2) as avg_feature from acoustic_features where artist="David Bowie" group by album', con=conn)
 	return df
 
 def get_all_decade_avg(conn: Connection,feature):
-	df = pd.read_sql(f'select * from (select album, date, substr(date, 1, 4) as year, substr(date, 1, 4) / 10 as ten_year_group,avg({feature}) avg_feature from acoustic_features where artist="David Bowie" group by 1, 2, 3) as source left join (select substr(date, 1, 4) / 10 as ten_year_group, avg({feature}) trend_feature from acoustic_features group by 1) as trend on trend.ten_year_group = source.ten_year_group', con=conn)
+	df = pd.read_sql(f'select * from (select album, date, substr(date, 1, 4) as year, substr(date, 1, 4) / 10 as ten_year_group,round(avg({feature}),2) avg_feature from acoustic_features where artist="David Bowie" group by 1, 2, 3) as source left join (select substr(date, 1, 4) / 10 as ten_year_group, round(avg({feature}),2) trend_feature from acoustic_features group by 1) as trend on trend.ten_year_group = source.ten_year_group', con=conn)
 	#new_df_by_melt = pd.melt(df, id_vars=['year'], value_vars=['energy', 'danceability', 'instrumentalness', 'valence'], var_name='attr')
 	return df
     
@@ -110,7 +110,7 @@ def main():
     #Paragrah-Chart 2
     st.header("Bar Chart-David Bowie's albums with average features")
     st.subheader(":musical_note: How is the feature of the album different from the songs in that decade?")
-    st.markdown("Instruction: Click on the checkbox to open the overlay bar chart to compare. Click on the bar for highlight.")
+    st.markdown("Instruction: Click on the checkbox to compare with the songs at that decade. Click on the bar for highlight.")
 
 
     #chart-bar
@@ -125,7 +125,7 @@ def main():
     width=1200,
     height=600,
     ).add_selection(selector)
-
+    #chart-decade-the numbers
   	#chart-decade
     bar_decade = alt.Chart(all_dacade_avg).mark_bar(color='#8624F5', opacity=0.5, thickness=10).encode(
     alt.X('album',sort={"field": "date", "order": "ascending"},title="(V)The correspondent decade of albums Issued Date"),
@@ -134,15 +134,15 @@ def main():
     width=1200,
     height=600,
     )#.add_selection(selector)
-    
-    text = bar_decade.mark_text(align='center').encode(
-    text='trend_feature:N'
+    #chart-decade-the numbers
+    text_decade = bar_decade.mark_text(align='center', color='white',dy=80).encode(
+    text='avg_feature:N'
 	)
     
     #checkbox-chart comparison
     agree = st.checkbox('Compare the\n'+option+'\nof the albums with the average\n'+option+'\nof songs by decede.')
     if agree:
-    	st.write(bar_decade+bar_album)
+    	st.write(bar_decade+bar_album+text_decade)
     else:
         st.write(bar_album)
 	
