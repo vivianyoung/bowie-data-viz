@@ -7,6 +7,8 @@ import plotly.express as px
 
 from utils import *
 
+st.write(f'spotify client id: {SPOTIFY_CLIENT_ID}')
+
 def main():
   # use custom css
   with open('./styles.css') as f:
